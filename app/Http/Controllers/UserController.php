@@ -6,6 +6,8 @@ use App\User;
 use Illuminate\Http\Request;
 use App\Services\MailService;
 
+use App\Jobs\SendVerificationEmail;
+
 class UserController extends Controller
 {
     /**
@@ -23,8 +25,7 @@ class UserController extends Controller
 
         $user = User::create($validated);
 
-        // Simulate sending verification email
-        MailService::verifyUser($user);
+        SendVerificationEmail::dispatch($user->email);
 
         return response()->json($user, 201);
     }
@@ -39,9 +40,9 @@ class UserController extends Controller
     {
         $query = User::query();
 
-        // Filter by verification status
+        // Filter by verification status if 'is_verified' parameter is present
         if ($request->has('is_verified')) {
-            $query->where('is_verified', $request->get('is_verified'));
+            $query->where('is_verified', filter_var($request->input('is_verified'), FILTER_VALIDATE_BOOLEAN));
         }
 
         // Order by name
