@@ -1,58 +1,141 @@
-## Everli interview exercise
-Hey!
 
-First, thanks for your time, and congrats on having made this further in the interview process.
-In this exercise, you will be asked to create a Laravel application and implement a simple feature.
+# Laravel User Management API
 
-There will be no frontend on this task, just take it as an API server.
+This Laravel application provides an API to manage users. It includes endpoints to register users and retrieve user information with filtering options. Additionally, it features email verification using a job queue.
 
-We encourage candidates to make assumptions and to be autonomous in solving the task as long as it is explained and documented.
-
-#### The stack
-
-If you are uncomfortable solving this task in PHP, feel free to reach the same solution with the language you prefer and the framework you feel most comfortable with.
-Our stack mainly focuses on PHP and Typescript but we want to evaluate your approach to a problem rather than the syntax itself.
-
-##### The feature
-
-A Laravel application with 2 endpoints to manage users.
-
-We don't expect you to implement authentication and authorization.
-
-#### Requirements 
-- The default database is MySQL but feel free to change to one you are more comfortable with
-- Each user should have a unique email and a name
-- The user can be either verified or not
-- All endpoints should return JSON
-- A README file with the instructions to run the app
-
-#### Seeding
-Engineers need to seed the database regularly, they expect the seed to create 100k users, a mix of verified and unverified users.
-The performance of the seeder matters.
-
-#### Register a user
-Implement an endpoint `POST /user` 
-- The user should receive an email upon registration to verify the mail
-- This endpoint will be called roughly 20k times per minute during spike times, e.g. marketing campaign
-- To send the email you should use the `App\Services\MailService::verifyUser`, do not bother to set up a mail client
-
-#### Retrieve users
-Implement an endpoint `GET /users` to retrieve users
-- Users can be filtered by verification status
-- Users are ordered by name by default
-
-## How to run the existing application
-
-You will need the following installed:
+## Requirements
 
 - PHP >= 8.3
+- Composer
+- MySQL (or any preferred database)
+- Laravel 8.x or later
 
-### To start the server
+## Installation
 
-- Run `php artisan migrate` to setup database
-- Run `php artisan serve` to start the server
+1. Clone the repository:
+    ```bash
+    git clone <repository-url>
+    cd <repository-directory>
+    ```
 
-## What to do after
-1. You can create a README section to explain your implementation details
-2. Open a PR on the repo and send a link to the HR email of reference
-3. Send any feedback you feel sharing about the exercise
+2. Install dependencies:
+    ```bash
+    composer install
+    ```
+
+3. Setup environment variables: Copy `.env.example` to `.env` and configure your database settings.
+    ```bash
+    cp .env.example .env
+    ```
+
+4. Generate application key:
+    ```bash
+    php artisan key:generate
+    ```
+
+5. Run database migrations:
+    ```bash
+    php artisan migrate
+    ```
+
+6. Start the server:
+    ```bash
+    php artisan serve
+    ```
+
+7. Start the queue worker: Open a new terminal and run:
+    ```bash
+    php artisan queue:work
+    ```
+
+## Database Seeding
+
+To seed the database with 100,000 users (a mix of verified and unverified users), run:
+```bash
+php artisan db:seed --class=UserSeeder
+```
+
+## Endpoints
+
+### Register a User
+
+- **URL**: `/api/user`
+- **Method**: POST
+- **Headers**: `Content-Type: application/json`
+- **Body**:
+    ```json
+    {
+        "name": "John Doe",
+        "email": "john.doe@example.com"
+    }
+    ```
+
+- **Response**:
+    - **Status**: 201 Created
+    - **Body**:
+        ```json
+        {
+            "id": 1,
+            "name": "John Doe",
+            "email": "john.doe@example.com",
+            "is_verified": false,
+            "created_at": "2024-06-24T00:00:00.000000Z",
+            "updated_at": "2024-06-24T00:00:00.000000Z"
+        }
+        ```
+
+### Retrieve Users
+
+- **URL**: `/api/users`
+- **Method**: GET
+- **Query Parameters**:
+    - `is_verified` (optional): true or false to filter by verification status.
+
+- **Response**:
+    - **Status**: 200 OK
+    - **Body**:
+        ```json
+        [
+            {
+                "id": 1,
+                "name": "John Doe",
+                "email": "john.doe@example.com",
+                "is_verified": false,
+                "created_at": "2024-06-24T00:00:00.000000Z",
+                "updated_at": "2024-06-24T00:00:00.000000Z"
+            },
+            ...
+        ]
+        ```
+
+## Testing
+
+To test the application, you can use PHPUnit:
+- Run the tests:
+    ```bash
+    php artisan test
+    ```
+
+## Logging
+
+Logs for email verification are written to `storage/logs/laravel.log`. Ensure your `logging.php` configuration is set up correctly.
+
+## Notes
+
+- Make sure to configure your `.env` file with appropriate settings for your environment.
+- The email verification is logged and not actually sent. This is for development and testing purposes.
+- During high traffic periods (e.g., marketing campaigns), ensure your queue worker can handle the load by properly configuring the queue system.
+
+
+## My Feedback
+
+- The task was clear, straightforward, and practical, providing a good learning experience.
+- Setting up and running the queue worker correctly posed a challenge.
+- Ensuring the seeder was fast and efficient with a large dataset required thoughtful consideration.
+- Improved understanding of Laravel’s queue system functionality.
+- Importance of optimizing database operations for performance.
+- More detailed setup instructions for the queue worker would be beneficial.
+- Including a mock or example for MailService could enhance clarity.
+- Emphasizing logging and monitoring during high traffic periods could be beneficial.
+- The exercise was practical and relevant to real-world scenarios.
+- Effective use of Laravel’s features made the task feel cohesive and valuable.
